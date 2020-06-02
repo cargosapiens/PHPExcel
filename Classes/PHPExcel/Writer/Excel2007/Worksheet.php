@@ -768,67 +768,65 @@ class PHPExcel_Writer_Excel2007_Worksheet extends PHPExcel_Writer_Excel2007_Writ
             $objWriter->writeAttribute('ref', str_replace('$', '', $range));
 
             $columns = $pSheet->getAutoFilter()->getColumns();
-            if (count($columns > 0)) {
-                foreach ($columns as $columnID => $column) {
-                    $rules = $column->getRules();
-                    if (count($rules) > 0) {
-                        $objWriter->startElement('filterColumn');
-                        $objWriter->writeAttribute('colId', $pSheet->getAutoFilter()->getColumnOffset($columnID));
+            foreach ($columns as $columnID => $column) {
+                $rules = $column->getRules();
+                if (count($rules) > 0) {
+                    $objWriter->startElement('filterColumn');
+                    $objWriter->writeAttribute('colId', $pSheet->getAutoFilter()->getColumnOffset($columnID));
 
-                        $objWriter->startElement($column->getFilterType());
-                        if ($column->getJoin() == PHPExcel_Worksheet_AutoFilter_Column::AUTOFILTER_COLUMN_JOIN_AND) {
-                            $objWriter->writeAttribute('and', 1);
-                        }
-
-                        foreach ($rules as $rule) {
-                            if (($column->getFilterType() === PHPExcel_Worksheet_AutoFilter_Column::AUTOFILTER_FILTERTYPE_FILTER) &&
-                                ($rule->getOperator() === PHPExcel_Worksheet_AutoFilter_Column_Rule::AUTOFILTER_COLUMN_RULE_EQUAL) &&
-                                ($rule->getValue() === '')) {
-                                //    Filter rule for Blanks
-                                $objWriter->writeAttribute('blank', 1);
-                            } elseif ($rule->getRuleType() === PHPExcel_Worksheet_AutoFilter_Column_Rule::AUTOFILTER_RULETYPE_DYNAMICFILTER) {
-                                //    Dynamic Filter Rule
-                                $objWriter->writeAttribute('type', $rule->getGrouping());
-                                $val = $column->getAttribute('val');
-                                if ($val !== null) {
-                                    $objWriter->writeAttribute('val', $val);
-                                }
-                                $maxVal = $column->getAttribute('maxVal');
-                                if ($maxVal !== null) {
-                                    $objWriter->writeAttribute('maxVal', $maxVal);
-                                }
-                            } elseif ($rule->getRuleType() === PHPExcel_Worksheet_AutoFilter_Column_Rule::AUTOFILTER_RULETYPE_TOPTENFILTER) {
-                                //    Top 10 Filter Rule
-                                $objWriter->writeAttribute('val', $rule->getValue());
-                                $objWriter->writeAttribute('percent', (($rule->getOperator() === PHPExcel_Worksheet_AutoFilter_Column_Rule::AUTOFILTER_COLUMN_RULE_TOPTEN_PERCENT) ? '1' : '0'));
-                                $objWriter->writeAttribute('top', (($rule->getGrouping() === PHPExcel_Worksheet_AutoFilter_Column_Rule::AUTOFILTER_COLUMN_RULE_TOPTEN_TOP) ? '1': '0'));
-                            } else {
-                                //    Filter, DateGroupItem or CustomFilter
-                                $objWriter->startElement($rule->getRuleType());
-
-                                if ($rule->getOperator() !== PHPExcel_Worksheet_AutoFilter_Column_Rule::AUTOFILTER_COLUMN_RULE_EQUAL) {
-                                    $objWriter->writeAttribute('operator', $rule->getOperator());
-                                }
-                                if ($rule->getRuleType() === PHPExcel_Worksheet_AutoFilter_Column_Rule::AUTOFILTER_RULETYPE_DATEGROUP) {
-                                    // Date Group filters
-                                    foreach ($rule->getValue() as $key => $value) {
-                                        if ($value > '') {
-                                            $objWriter->writeAttribute($key, $value);
-                                        }
-                                    }
-                                    $objWriter->writeAttribute('dateTimeGrouping', $rule->getGrouping());
-                                } else {
-                                    $objWriter->writeAttribute('val', $rule->getValue());
-                                }
-
-                                $objWriter->endElement();
-                            }
-                        }
-
-                        $objWriter->endElement();
-
-                        $objWriter->endElement();
+                    $objWriter->startElement($column->getFilterType());
+                    if ($column->getJoin() == PHPExcel_Worksheet_AutoFilter_Column::AUTOFILTER_COLUMN_JOIN_AND) {
+                        $objWriter->writeAttribute('and', 1);
                     }
+
+                    foreach ($rules as $rule) {
+                        if (($column->getFilterType() === PHPExcel_Worksheet_AutoFilter_Column::AUTOFILTER_FILTERTYPE_FILTER) &&
+                            ($rule->getOperator() === PHPExcel_Worksheet_AutoFilter_Column_Rule::AUTOFILTER_COLUMN_RULE_EQUAL) &&
+                            ($rule->getValue() === '')) {
+                            //    Filter rule for Blanks
+                            $objWriter->writeAttribute('blank', 1);
+                        } elseif ($rule->getRuleType() === PHPExcel_Worksheet_AutoFilter_Column_Rule::AUTOFILTER_RULETYPE_DYNAMICFILTER) {
+                            //    Dynamic Filter Rule
+                            $objWriter->writeAttribute('type', $rule->getGrouping());
+                            $val = $column->getAttribute('val');
+                            if ($val !== null) {
+                                $objWriter->writeAttribute('val', $val);
+                            }
+                            $maxVal = $column->getAttribute('maxVal');
+                            if ($maxVal !== null) {
+                                $objWriter->writeAttribute('maxVal', $maxVal);
+                            }
+                        } elseif ($rule->getRuleType() === PHPExcel_Worksheet_AutoFilter_Column_Rule::AUTOFILTER_RULETYPE_TOPTENFILTER) {
+                            //    Top 10 Filter Rule
+                            $objWriter->writeAttribute('val', $rule->getValue());
+                            $objWriter->writeAttribute('percent', (($rule->getOperator() === PHPExcel_Worksheet_AutoFilter_Column_Rule::AUTOFILTER_COLUMN_RULE_TOPTEN_PERCENT) ? '1' : '0'));
+                            $objWriter->writeAttribute('top', (($rule->getGrouping() === PHPExcel_Worksheet_AutoFilter_Column_Rule::AUTOFILTER_COLUMN_RULE_TOPTEN_TOP) ? '1': '0'));
+                        } else {
+                            //    Filter, DateGroupItem or CustomFilter
+                            $objWriter->startElement($rule->getRuleType());
+
+                            if ($rule->getOperator() !== PHPExcel_Worksheet_AutoFilter_Column_Rule::AUTOFILTER_COLUMN_RULE_EQUAL) {
+                                $objWriter->writeAttribute('operator', $rule->getOperator());
+                            }
+                            if ($rule->getRuleType() === PHPExcel_Worksheet_AutoFilter_Column_Rule::AUTOFILTER_RULETYPE_DATEGROUP) {
+                                // Date Group filters
+                                foreach ($rule->getValue() as $key => $value) {
+                                    if ($value > '') {
+                                        $objWriter->writeAttribute($key, $value);
+                                    }
+                                }
+                                $objWriter->writeAttribute('dateTimeGrouping', $rule->getGrouping());
+                            } else {
+                                $objWriter->writeAttribute('val', $rule->getValue());
+                            }
+
+                            $objWriter->endElement();
+                        }
+                    }
+
+                    $objWriter->endElement();
+
+                    $objWriter->endElement();
                 }
             }
             $objWriter->endElement();
